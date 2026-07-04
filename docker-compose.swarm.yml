@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  api:
+    # En producción ya no se compila, se descarga de tu Docker Hub
+    image: tu_usuario_dockerhub/validador-api:v1.0 
+    expose:
+      - "8000"
+    networks:
+      - swarm_network
+    environment:
+      # Aquí irá la IP estática de la PC que corra el LLM ese día
+      - OLLAMA_HOST=http://192.168.1.XX:11434 
+    deploy:
+      replicas: 4 # Cantidad de nodos en el clúster
+      restart_policy:
+        condition: on-failure
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    # Swarm usa configs en lugar de volúmenes locales para distribuir el archivo a otras PCs
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
+    networks:
+      - swarm_network
+    deploy:
+      replicas: 1
+
+configs:
+  nginx_config:
+    file: ./nginx/nginx.conf
+
+networks:
+  swarm_network:
+    driver: overlay

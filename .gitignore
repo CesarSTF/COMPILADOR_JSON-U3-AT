@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.venv
+venv/
+ENV/
+
+# Node / Vite (Frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker / Entornos
+.env
+.env.*
+!.env.example
+.dockerignore
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de texto temporales creados por nosotros durante el tutorial
+*.txt
+!PRUEBAS_INSOMNIA.txt
+!TrabajoFinUnidad-U3-AT.pdf
