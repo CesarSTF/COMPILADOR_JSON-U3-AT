@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from sintactico.parser import ConfigParser
-from semantico.validador import ValidadorSemantico
-from semantico.llm_service import LLMStrategy
+from domain.sintactico.parser import ConfigParser
+from domain.semantico.validador import ValidadorSemantico
+from adapters.out_llm.llm_service import LLMStrategy
 
 from fastapi.middleware.cors import CORSMiddleware
 
