@@ -23,6 +23,17 @@ const isLoading = ref(false)
 const result = ref<any>(null)
 const rawHtmlResponse = ref<string>("")
 
+const examples = {
+  jsonCorrect: `{\n  "host": "localhost",\n  "puerto": 8080,\n  "modo": "produccion",\n  "debug": false\n}`,
+  jsonError: `{\n  "host": "localhost",\n  "puerto": 999999,\n  "modo": "produccion",\n  "debug": true\n}`,
+  yamlCorrect: `host: localhost\npuerto: 8080\nmodo: produccion\ndebug: false`,
+  yamlError: `host: localhost\npuerto: 999999\nmodo: produccion\ndebug: true`
+}
+
+const loadExample = (key: keyof typeof examples) => {
+  code.value = examples[key]
+}
+
 const validateCode = async () => {
   isLoading.value = true
   result.value = null
@@ -98,10 +109,18 @@ const editorMounted = (editor: any) => {
       
       <!-- Left Column: Editor -->
       <section class="flex-1 flex flex-col space-y-3">
-        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center">
-          <svg class="w-4 h-4 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          Archivo de Configuración (JSON/YAML)
-        </h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center">
+            <svg class="w-4 h-4 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Archivo de Configuración
+          </h2>
+          <div class="flex space-x-2 text-xs">
+            <button @click="loadExample('jsonCorrect')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 transition-colors">JSON ✓</button>
+            <button @click="loadExample('jsonError')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-rose-300 transition-colors">JSON ✗</button>
+            <button @click="loadExample('yamlCorrect')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 transition-colors">YAML ✓</button>
+            <button @click="loadExample('yamlError')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-rose-300 transition-colors">YAML ✗</button>
+          </div>
+        </div>
         <div class="flex-1 min-h-[400px] border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative">
           <div class="absolute inset-0 bg-[#1e1e1e]">
             <vue-monaco-editor

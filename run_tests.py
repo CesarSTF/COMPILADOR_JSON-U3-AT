@@ -65,11 +65,11 @@ def esperar_servidor():
             req = urllib.request.Request(HEALTH_URL)
             with urllib.request.urlopen(req, timeout=2) as response:
                 if response.status == 200:
-                    print("✅ Servidor disponible.\n")
+                    print("[OK] Servidor disponible.\n")
                     return True
         except Exception:
             time.sleep(1)
-    print("❌ El servidor no respondió. Asegúrate de ejecutar 'make up' antes de correr este script.")
+    print("[ERROR] El servidor no respondió. Asegúrate de ejecutar 'make up' antes de correr este script.")
     return False
 
 def ejecutar_pruebas():
@@ -100,19 +100,19 @@ def ejecutar_pruebas():
             status = e.code
             respuesta_json = json.loads(e.read().decode('utf-8'))
         except Exception as e:
-            print(f"❌ Fallo de conexión: {e}\n")
+            print(f"[ERROR] Fallo de conexión: {e}\n")
             continue
 
         if status == test['esperado_status']:
-            print(f"✅ PASÓ (Status {status})")
+            print(f"[OK] PASÓ (Status {status})")
             exitosos += 1
             if status != 200:
                 diagnostico = respuesta_json.get('diagnostico_ia', {})
-                print(f"   🤖 Diagnóstico LLM: {diagnostico.get('reason', 'Sin razón devuelta')}")
+                print(f"   [LLM] Diagnóstico LLM: {diagnostico.get('reason', 'Sin razón devuelta')}")
                 if 'solution_example' in diagnostico:
-                    print(f"   💡 Ejemplo de solución:\n      {diagnostico['solution_example']}")
+                    print(f"   [SOLUCION] Ejemplo de solución:\n      {diagnostico['solution_example']}")
         else:
-            print(f"❌ FALLÓ (Esperaba {test['esperado_status']}, obtuvo {status})")
+            print(f"[ERROR] FALLÓ (Esperaba {test['esperado_status']}, obtuvo {status})")
             print(f"   Respuesta: {json.dumps(respuesta_json, indent=2, ensure_ascii=False)}")
         
         print("")
