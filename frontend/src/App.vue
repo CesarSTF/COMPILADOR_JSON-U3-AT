@@ -25,9 +25,7 @@ const rawHtmlResponse = ref<string>("")
 
 const examples = {
   jsonCorrect: `{\n  "host": "localhost",\n  "puerto": 8080,\n  "modo": "produccion",\n  "debug": false\n}`,
-  jsonError: `{\n  "host": "localhost",\n  "puerto": 999999,\n  "modo": "produccion",\n  "debug": true\n}`,
-  yamlCorrect: `host: localhost\npuerto: 8080\nmodo: produccion\ndebug: false`,
-  yamlError: `host: localhost\npuerto: 999999\nmodo: produccion\ndebug: true`
+  jsonError: `{\n  "host": "localhost",\n  "puerto": 999999,\n  "modo": "produccion",\n  "debug": true\n}`
 }
 
 const loadExample = (key: keyof typeof examples) => {
@@ -117,8 +115,6 @@ const editorMounted = (editor: any) => {
           <div class="flex space-x-2 text-xs">
             <button @click="loadExample('jsonCorrect')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 transition-colors">JSON ✓</button>
             <button @click="loadExample('jsonError')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-rose-300 transition-colors">JSON ✗</button>
-            <button @click="loadExample('yamlCorrect')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 transition-colors">YAML ✓</button>
-            <button @click="loadExample('yamlError')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-rose-300 transition-colors">YAML ✗</button>
           </div>
         </div>
         <div class="flex-1 min-h-[400px] border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative">
