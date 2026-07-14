@@ -6,17 +6,7 @@ class LLMStrategy:
         self.modelo = modelo
         self.debug = True
 
-    def analizar_errores_configuracion(self, codigo_fuente: str, error_detectado: dict, formato: str = "JSON") -> dict:
-        # Instrucción dinámica para el formato de la solución sugerida
-        if formato == "YAML":
-            instruccion_formato = """6. FORMATO DE SOLUCIÓN: El archivo original fue escrito en YAML.
-   El campo "solution_example" DEBE estar escrito en formato YAML (sin llaves, sin comillas en claves, usando indentación).
-   Ejemplo YAML: "host: localhost\npuerto: 8080\nmodo: produccion\ndebug: false"""
-        else:
-            instruccion_formato = """6. FORMATO DE SOLUCIÓN: El archivo original fue escrito en JSON.
-   El campo "solution_example" DEBE estar escrito en formato JSON (con llaves, comillas dobles y comas).
-   Ejemplo JSON: "{\\n  \\"host\\": \\"localhost\\",\\n  \\"puerto\\": 8080\\n}"""
-
+    def analizar_errores_configuracion(self, codigo_fuente: str, error_detectado: dict) -> dict:
         prompt = f"""
 Eres un experto en infraestructuras DevOps y soporte técnico.
 
@@ -32,9 +22,8 @@ Reglas CRÍTICAS para tu diagnóstico:
 3. SI EL ERROR ES "Semantico":
    - El fallo viola reglas de negocio (puerto inválido, falta host, conflicto modo/debug).
    - "errParameter" DEBE ser la clave exacta (ej. ["puerto"]).
-4. "solution_example" ESTÁ ESTRICTAMENTE PROHIBIDO dejarlo vacío, debe mostrar el código corregido.
+4. "solution_example" ESTÁ ESTRICTAMENTE PROHIBIDO dejarlo vacío, debe mostrar el JSON corregido.
 5. Responde ÚNICAMENTE con JSON válido.
-{instruccion_formato}
 
 === EJEMPLOS DE COMPORTAMIENTO ESPERADO (APRENDIZAJE EN CONTEXTO) ===
 EJEMPLO 1 (Error Sintáctico por formato):
