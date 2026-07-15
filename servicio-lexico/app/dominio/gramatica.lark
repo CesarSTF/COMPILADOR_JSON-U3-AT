@@ -1,0 +1,25 @@
+// Fase 1: Analisis Lexico y Sintactico
+// Simbolo Inicial (INICIO)
+inicio: objeto
+
+// Simbolos No Terminales (Reglas de Produccion)
+objeto: "{" miembros "}" 
+      | "{" "}"
+
+miembros: par ("," par)*
+
+par: T_STRING ":" valor
+
+valor: T_STRING 
+     | T_NUMERO 
+     | T_BOOLEANO 
+     | objeto
+
+// Simbolos Terminales (Tokens y Expresiones Regulares)
+T_STRING: /"[^"]*"/
+T_NUMERO: /[0-9]+/
+T_BOOLEANO: "true" | "false"
+
+// Reglas de ignorado (espacios, saltos de linea)
+%import common.WS
+%ignore WS

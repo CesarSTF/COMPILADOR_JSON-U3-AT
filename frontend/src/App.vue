@@ -37,7 +37,7 @@ const validateCode = async () => {
   result.value = null
   rawHtmlResponse.value = ""
   try {
-    const res = await fetch('http://Grupo4/analizar', {
+    const res = await fetch('http://localhost:8001/analizar', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ const validateCode = async () => {
       body: code.value,
     })
     
-    // Nginx could return HTML 502/504 errors if API is down
+    // La API podría devolver errores HTML (ej. 500 Interno)
     const contentType = res.headers.get("content-type");
     if (contentType && contentType.includes("text/html")) {
         rawHtmlResponse.value = await res.text()
@@ -56,7 +56,7 @@ const validateCode = async () => {
   } catch (error: any) {
     result.value = { 
       status: 0, 
-      data: { error: "No se pudo conectar con el servidor (¿Está apagado Nginx?)" } 
+      data: { error: "No se pudo conectar con el servidor API." } 
     }
   } finally {
     isLoading.value = false
@@ -83,7 +83,7 @@ const editorMounted = (editor: any) => {
             <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
               Distributed DSL Compiler
             </h1>
-            <p class="text-xs text-slate-400">Powered by FastAPI, Docker Swarm & Qwen2.5</p>
+            <p class="text-xs text-slate-400">Powered by FastAPI & Qwen2.5</p>
           </div>
         </div>
         
@@ -144,13 +144,13 @@ const editorMounted = (editor: any) => {
             <p>Esperando ejecución...</p>
           </div>
 
-          <!-- HTML Error Fallback (Ej: Nginx 502) -->
+          <!-- HTML Error Fallback (Ej: API 500) -->
           <div v-else-if="rawHtmlResponse" class="text-red-400 bg-red-900/20 p-4 rounded-lg border border-red-800">
              <h3 class="font-bold text-lg mb-2 flex items-center">
                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-               Error del Servidor Web (HTML)
+               Error del Servidor API (HTML)
              </h3>
-             <p class="text-sm">El servidor no devolvió JSON. Probablemente Nginx esté reportando un 502 Bad Gateway.</p>
+             <p class="text-sm">El servidor no devolvió JSON. Probablemente la API devolvió un 500 Internal Server Error.</p>
           </div>
 
           <!-- Loading -->
@@ -183,6 +183,17 @@ const editorMounted = (editor: any) => {
               <div class="bg-slate-900/50 rounded-lg p-4 font-mono text-sm text-slate-300">
                 <pre class="whitespace-pre-wrap">{{ JSON.stringify(result.data.configuracion_aprobada, null, 2) }}</pre>
               </div>
+
+              <!-- Raw Técnico AST (Agregado para ver el arbol) -->
+              <details class="group bg-slate-800 border border-slate-700 rounded-xl mt-4">
+                <summary class="cursor-pointer p-4 text-slate-400 font-medium text-sm flex items-center justify-between">
+                  <span>Ver Detalle del Árbol (AST)</span>
+                  <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="p-4 border-t border-slate-700 bg-slate-900/50 font-mono text-xs text-slate-500 overflow-x-auto rounded-b-xl max-h-96">
+                  <pre>{{ JSON.stringify(result.data.ast, null, 2) }}</pre>
+                </div>
+              </details>
             </div>
 
             <!-- ERROR 422 -->

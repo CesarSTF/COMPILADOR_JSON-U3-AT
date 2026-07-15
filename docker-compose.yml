@@ -1,34 +1,51 @@
-version: '3.8'
-
 services:
-  api:
-    build: 
-      context: ./app
-      dockerfile: Dockerfile
-    # image: usuario_dockerhub/validador-api:v1.0 # (Descomentar para push a Docker Hub)
-    # Exponemos ningún puerto hacia el exterior, solo Nginx puede hablar con "api" a través de la red interna.
-    expose:
-      - "8000"
+  lexico:
+    build:
+      context: ./servicio-lexico/app
+      dockerfile: ../Dockerfile
+    ports:
+      - "8001:8001"
     networks:
-      - internal_network
+      - red_compilador
+    env_file:
+      - .env
     environment:
-      # Si Ollama está corriendo en la máquina host (fuera de Docker), 
-      # el contenedor puede comunicarse con él usando esta URL:
-      - OLLAMA_HOST=http://host.docker.internal:11434
+      - URL_SERVICIO_SINTACTICO=http://sintactico:8002
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"  # Mapea el puerto 80 del host al 80 del contenedor Nginx (Puerto oculto en la URL)
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - api
+      - sintactico
+
+  sintactico:
+    build:
+      context: ./servicio-sintactico/app
+      dockerfile: ../Dockerfile
+    ports:
+      - "8002:8002"
     networks:
-      - internal_network
+      - red_compilador
+    env_file:
+      - .env
+    environment:
+      - URL_SERVICIO_SEMANTICO=http://semantico:8003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - semantico
+
+  semantico:
+    build:
+      context: ./servicio-semantico
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    networks:
+      - red_compilador
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
-  internal_network:
+  red_compilador:
     driver: bridge

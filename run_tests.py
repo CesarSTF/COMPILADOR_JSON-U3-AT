@@ -3,64 +3,72 @@ import urllib.request
 import urllib.error
 import time
 
-URL = "http://Grupo4/analizar"
-HEALTH_URL = "http://Grupo4/health"
+# URL del punto de entrada del pipeline (Servicio Lexico)
+URL = "http://localhost:8001/analizar"
+HEALTH_URL = "http://localhost:8001/health"
 
 TESTS = [
     {
-        "nombre": "1. Configuración Válida",
+        "nombre": "1. Configuracion Valida",
         "payload": """{
             "host": "0.0.0.0",
             "puerto": 8080,
             "modo": "desarrollo",
-            "debug": true,
-            "database": {
-                "user": "admin",
-                "timeout": 30
-            }
+            "debug": true
         }""",
         "esperado_status": 200
     },
     {
-        "nombre": "2. Error Léxico / Sintáctico (Falta coma y comillas)",
-        "payload": """{
-            "host": "0.0.0.0"
-            puerto: 8080
-        }""",
-        "esperado_status": 422
-    },
-    {
-        "nombre": "3. Error Semántico 1: Falta 'puerto' (Integridad)",
-        "payload": """{
-            "host": "192.168.1.1",
-            "modo": "producción"
-        }""",
-        "esperado_status": 422
-    },
-    {
-        "nombre": "4. Error Semántico 2: Puerto fuera de rango",
+        "nombre": "2. Error Lexico (caracter invalido)",
         "payload": """{
             "host": "localhost",
-            "puerto": 70000,
-            "modo": "desarrollo"
+            "puerto": 8080,
+            "modo": @invalido@
         }""",
         "esperado_status": 422
     },
     {
-        "nombre": "5. Error Semántico 3: Consistencia Lógica (Producción con debug=true)",
+        "nombre": "3. Error Sintactico (falta coma)",
+        "payload": """{
+            "host": "localhost"
+            "puerto": 8080
+        }""",
+        "esperado_status": 422
+    },
+    {
+        "nombre": "4. Error Semantico (puerto fuera de rango)",
         "payload": """{
             "host": "localhost",
-            "puerto": 443,
-            "modo": "producción",
+            "puerto": 999999,
+            "modo": "desarrollo",
             "debug": true
+        }""",
+        "esperado_status": 422
+    },
+    {
+        "nombre": "5. Error Semantico (debug=true en produccion)",
+        "payload": """{
+            "host": "localhost",
+            "puerto": 8080,
+            "modo": "produccion",
+            "debug": true
+        }""",
+        "esperado_status": 422
+    },
+    {
+        "nombre": "6. Error Semantico (falta host)",
+        "payload": """{
+            "puerto": 8080,
+            "modo": "desarrollo",
+            "debug": false
         }""",
         "esperado_status": 422
     }
 ]
 
-def esperar_servidor():
-    print("⏳ Esperando a que el servidor esté disponible en Grupo4...")
-    for _ in range(15):
+def esperar_servidor(intentos=15):
+    print(f"Esperando a que el pipeline este disponible ({HEALTH_URL})...")
+    for i in range(intentos):
         try:
             req = urllib.request.Request(HEALTH_URL)
             with urllib.request.urlopen(req, timeout=2) as response:
@@ -69,7 +77,7 @@ def esperar_servidor():
                     return True
         except Exception:
             time.sleep(1)
-    print("[ERROR] El servidor no respondió. Asegúrate de ejecutar 'make up' antes de correr este script.")
+    print("[ERROR] El servidor no respondio. Asegurate de ejecutar 'make up' antes de correr este script.")
     return False
 
 def ejecutar_pruebas():
@@ -100,25 +108,27 @@ def ejecutar_pruebas():
             status = e.code
             respuesta_json = json.loads(e.read().decode('utf-8'))
         except Exception as e:
-            print(f"[ERROR] Fallo de conexión: {e}\n")
+            print(f"[ERROR] Fallo de conexion: {e}\n")
             continue
 
         if status == test['esperado_status']:
-            print(f"[OK] PASÓ (Status {status})")
+            print(f"[OK] PASO (Status {status})")
             exitosos += 1
             if status != 200:
                 diagnostico = respuesta_json.get('diagnostico_ia', {})
-                print(f"   [LLM] Diagnóstico LLM: {diagnostico.get('reason', 'Sin razón devuelta')}")
+                print(f"   [LLM] Diagnostico LLM: {diagnostico.get('reason', 'Sin razon devuelta')}")
                 if 'solution_example' in diagnostico:
-                    print(f"   [SOLUCION] Ejemplo de solución:\n      {diagnostico['solution_example']}")
+                    print(f"   [SOLUCION] Ejemplo de solucion:\n      {diagnostico['solution_example']}")
         else:
-            print(f"[ERROR] FALLÓ (Esperaba {test['esperado_status']}, obtuvo {status})")
+            print(f"[ERROR] FALLO (Esperaba {test['esperado_status']}, obtuvo {status})")
             print(f"   Respuesta: {json.dumps(respuesta_json, indent=2, ensure_ascii=False)}")
         
         print("")
-        time.sleep(1) # Pequeña pausa para no saturar al LLM en las peticiones seguidas
+        time.sleep(1)
 
-    print(f"=== Resultados: {exitosos}/{totales} pruebas exitosas ===")
+    print(f"========================================")
+    print(f"Resultado: {exitosos}/{totales} pruebas pasaron.")
+    print(f"========================================")
 
 if __name__ == "__main__":
     ejecutar_pruebas()
