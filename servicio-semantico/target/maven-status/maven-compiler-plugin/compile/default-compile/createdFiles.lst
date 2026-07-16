@@ -1,6 +1,0 @@
-com/compilador/semantico/dominio/ValidadorSemantico$ResultadoValidacion.class
-com/compilador/semantico/Principal.class
-com/compilador/semantico/adaptadores/salida/ClienteLLM.class
-com/compilador/semantico/dominio/ConfiguracionDTO.class
-com/compilador/semantico/dominio/ValidadorSemantico.class
-com/compilador/semantico/adaptadores/entrada/ServidorWeb.class

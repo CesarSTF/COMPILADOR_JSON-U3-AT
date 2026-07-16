@@ -1,16 +1,18 @@
-FROM python:3.11-slim
+FROM maven:3.9-eclipse-temurin-17 AS compilacion
 
 WORKDIR /app
+COPY pom.xml .
+# Descargar dependencias primero (cache de Docker)
+RUN mvn dependency:go-offline -B
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+COPY src ./src
+RUN mvn package -DskipTests -q
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+FROM eclipse-temurin:17-jre-jammy
 
-COPY . .
+WORKDIR /app
+COPY --from=compilacion /app/target/servicio-sintactico-1.0.0.jar app.jar
 
 EXPOSE 8002
 
-CMD ["uvicorn", "adaptadores.entrada_web:aplicacion", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["java", "-jar", "app.jar"]

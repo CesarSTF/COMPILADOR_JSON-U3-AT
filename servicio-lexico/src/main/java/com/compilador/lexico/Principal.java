@@ -1,11 +1,12 @@
-package com.compilador.semantico;
+package com.compilador.lexico;
 
-import com.compilador.semantico.dominio.ValidadorSemantico;
-import com.compilador.semantico.adaptadores.entrada.ServidorWeb;
-import com.compilador.semantico.adaptadores.salida.ClienteLLM;
+import com.compilador.lexico.dominio.AnalizadorLexico;
+import com.compilador.lexico.adaptadores.entrada.ServidorWeb;
+import com.compilador.lexico.adaptadores.salida.ClienteLLM;
+import com.compilador.lexico.adaptadores.salida.ClienteSintactico;
 
 /**
- * Clase principal del Servicio Semantico.
+ * Clase principal del Servicio Lexico.
  * Inicializa los componentes de la arquitectura hexagonal
  * y arranca el servidor HTTP.
  */
@@ -16,20 +17,25 @@ public class Principal {
         String urlOllama = System.getenv("OLLAMA_HOST") != null
             ? System.getenv("OLLAMA_HOST")
             : "http://localhost:11434";
+        String urlSintactico = System.getenv("URL_SERVICIO_SINTACTICO") != null
+            ? System.getenv("URL_SERVICIO_SINTACTICO")
+            : "http://localhost:8002";
         String modeloLlm = System.getenv("OLLAMA_MODELO") != null
             ? System.getenv("OLLAMA_MODELO")
             : "qwen2.5-coder:3b";
-        int puerto = 8003;
+        int puerto = 8001;
 
-        System.out.println("=== Servicio Semantico ===");
+        System.out.println("=== Servicio Lexico ===");
         System.out.println("Puerto: " + puerto);
         System.out.println("Ollama: " + urlOllama);
         System.out.println("Modelo: " + modeloLlm);
+        System.out.println("Sintactico: " + urlSintactico);
 
         // Inyeccion de dependencias (Arquitectura Hexagonal)
-        ValidadorSemantico validador = new ValidadorSemantico();
+        AnalizadorLexico analizador = new AnalizadorLexico();
         ClienteLLM clienteLlm = new ClienteLLM(urlOllama, modeloLlm);
-        ServidorWeb servidor = new ServidorWeb(validador, clienteLlm);
+        ClienteSintactico clienteSintactico = new ClienteSintactico(urlSintactico);
+        ServidorWeb servidor = new ServidorWeb(analizador, clienteLlm, clienteSintactico);
 
         // Arrancar el servidor
         servidor.iniciar(puerto);

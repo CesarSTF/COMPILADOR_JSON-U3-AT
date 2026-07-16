@@ -52,3 +52,9 @@ yarn-error.log*
 *.txt
 !PRUEBAS_INSOMNIA.txt
 !TrabajoFinUnidad-U3-AT.pdf
+
+# Java/Maven
+target/
+*.jar
+*.class
+

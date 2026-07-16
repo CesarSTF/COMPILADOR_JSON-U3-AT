@@ -1,8 +1,8 @@
 services:
   lexico:
     build:
-      context: ./servicio-lexico/app
-      dockerfile: ../Dockerfile
+      context: ./servicio-lexico
+      dockerfile: Dockerfile
     ports:
       - "8001:8001"
     networks:
@@ -18,8 +18,8 @@ services:
 
   sintactico:
     build:
-      context: ./servicio-sintactico/app
-      dockerfile: ../Dockerfile
+      context: ./servicio-sintactico
+      dockerfile: Dockerfile
     ports:
       - "8002:8002"
     networks:
