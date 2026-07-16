@@ -20,7 +20,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.compilador.lexico.Principal</mainClass>
+                  <mainClass>com.compilador.lexico.Main</mainClass>
                 </transformer>
               </transformers>
             </configuration>

@@ -2,7 +2,6 @@ package com.compilador.semantico.adaptadores.entrada;
 
 import com.compilador.semantico.dominio.ValidadorSemantico;
 import com.compilador.semantico.dominio.ValidadorSemantico.ResultadoValidacion;
-import com.compilador.semantico.adaptadores.salida.ClienteLLM;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -11,15 +10,17 @@ import static spark.Spark.*;
 /**
  * Adaptador de entrada: servidor HTTP con Spark Java.
  * Expone los endpoints REST del Servicio Semantico.
+ *
+ * Patron: Cadena de Responsabilidad Distribuida.
+ * Este adaptador SOLO valida las reglas de negocio y retorna el resultado al Orquestador.
+ * No llama a ningun otro servicio (ni LLM).
  */
 public class ServidorWeb {
 
     private final ValidadorSemantico validador;
-    private final ClienteLLM clienteLlm;
 
-    public ServidorWeb(ValidadorSemantico validador, ClienteLLM clienteLlm) {
+    public ServidorWeb(ValidadorSemantico validador) {
         this.validador = validador;
-        this.clienteLlm = clienteLlm;
     }
 
     /**
@@ -70,7 +71,7 @@ public class ServidorWeb {
                 return crearRespuestaError("No se recibio el AST.");
             }
 
-            System.out.println("[SEMANTICO] AST recibido del Servicio Sintactico.");
+            System.out.println("[SEMANTICO] AST recibido del Orquestador.");
 
             // Fase 3: Validacion Semantica
             ResultadoValidacion resultado = validador.validar(ast);
@@ -84,24 +85,18 @@ public class ServidorWeb {
                 respuestaExitosa.addProperty("mensaje",
                     "La configuracion es lexica, sintactica y semanticamente valida.");
                 respuestaExitosa.add("configuracion_aprobada", resultado.getConfiguracion().aJson());
-                respuestaExitosa.add("ast", ast); // <- AST AGREGADO AQUI
+                respuestaExitosa.add("ast", ast);
                 return respuestaExitosa.toString();
             } else {
+                // Error semantico: devolver directamente al Orquestador
                 System.out.println("[SEMANTICO] Error semantico detectado: "
                     + resultado.getError().toString());
 
-                // Consultar al LLM para diagnostico
-                JsonObject diagnosticoIa = clienteLlm.diagnosticarError(
-                    codigoFuente, resultado.getError()
-                );
-
                 respuesta.status(422);
-
                 JsonObject respuestaError = new JsonObject();
                 respuestaError.addProperty("exito", false);
                 respuestaError.addProperty("fase_fallo", "Semantico");
                 respuestaError.add("detalle_tecnico", resultado.getError());
-                respuestaError.add("diagnostico_ia", diagnosticoIa);
                 return respuestaError.toString();
             }
         });

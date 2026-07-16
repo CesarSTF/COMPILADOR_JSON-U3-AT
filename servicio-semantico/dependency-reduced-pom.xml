@@ -20,7 +20,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.compilador.semantico.Principal</mainClass>
+                  <mainClass>com.compilador.semantico.Main</mainClass>
                 </transformer>
               </transformers>
             </configuration>

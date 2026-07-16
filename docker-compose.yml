@@ -1,4 +1,25 @@
 services:
+  orquestador:
+    build:
+      context: ./servicio-orquestador
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - red_compilador
+    env_file:
+      - .env
+    environment:
+      - URL_SERVICIO_LEXICO=http://lexico:8001
+      - URL_SERVICIO_SINTACTICO=http://sintactico:8002
+      - URL_SERVICIO_SEMANTICO=http://semantico:8003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - lexico
+      - sintactico
+      - semantico
+
   lexico:
     build:
       context: ./servicio-lexico
@@ -7,14 +28,6 @@ services:
       - "8001:8001"
     networks:
       - red_compilador
-    env_file:
-      - .env
-    environment:
-      - URL_SERVICIO_SINTACTICO=http://sintactico:8002
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - sintactico
 
   sintactico:
     build:
@@ -24,14 +37,6 @@ services:
       - "8002:8002"
     networks:
       - red_compilador
-    env_file:
-      - .env
-    environment:
-      - URL_SERVICIO_SEMANTICO=http://semantico:8003
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - semantico
 
   semantico:
     build:
@@ -41,10 +46,6 @@ services:
       - "8003:8003"
     networks:
       - red_compilador
-    env_file:
-      - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
 networks:
   red_compilador:

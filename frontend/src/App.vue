@@ -37,15 +37,12 @@ const validateCode = async () => {
   result.value = null
   rawHtmlResponse.value = ""
   try {
-    const res = await fetch('http://localhost:8001/analizar', {
+    const res = await fetch('http://localhost:8000/compilar', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: code.value,
     })
     
-    // La API podría devolver errores HTML (ej. 500 Interno)
     const contentType = res.headers.get("content-type");
     if (contentType && contentType.includes("text/html")) {
         rawHtmlResponse.value = await res.text()
@@ -56,7 +53,7 @@ const validateCode = async () => {
   } catch (error: any) {
     result.value = { 
       status: 0, 
-      data: { error: "No se pudo conectar con el servidor API." } 
+      data: { error: "No se pudo conectar con el Orquestador." } 
     }
   } finally {
     isLoading.value = false
@@ -64,7 +61,6 @@ const validateCode = async () => {
 }
 
 const editorMounted = (editor: any) => {
-  // Opcional: enfocar el editor al cargar
   editor.focus()
 }
 </script>
@@ -83,7 +79,7 @@ const editorMounted = (editor: any) => {
             <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
               Distributed DSL Compiler
             </h1>
-            <p class="text-xs text-slate-400">Powered by FastAPI & Qwen2.5</p>
+            <p class="text-xs text-slate-400">Cadena de Responsabilidad Distribuida + Arquitectura Hexagonal</p>
           </div>
         </div>
         
@@ -160,7 +156,7 @@ const editorMounted = (editor: any) => {
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="font-mono text-sm">Analizando sintaxis y validando reglas de negocio...</span>
+                <span class="font-mono text-sm">Ejecutando cadena de compilacion...</span>
              </div>
              <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div class="h-full bg-indigo-500 w-1/2 animate-pulse"></div>
@@ -184,7 +180,7 @@ const editorMounted = (editor: any) => {
                 <pre class="whitespace-pre-wrap">{{ JSON.stringify(result.data.configuracion_aprobada, null, 2) }}</pre>
               </div>
 
-              <!-- Raw Técnico AST (Agregado para ver el arbol) -->
+              <!-- Raw Técnico AST -->
               <details class="group bg-slate-800 border border-slate-700 rounded-xl mt-4">
                 <summary class="cursor-pointer p-4 text-slate-400 font-medium text-sm flex items-center justify-between">
                   <span>Ver Detalle del Árbol (AST)</span>

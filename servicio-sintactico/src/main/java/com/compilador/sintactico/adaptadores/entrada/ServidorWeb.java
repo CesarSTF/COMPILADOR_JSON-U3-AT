@@ -2,8 +2,6 @@ package com.compilador.sintactico.adaptadores.entrada;
 
 import com.compilador.sintactico.dominio.AnalizadorSintactico;
 import com.compilador.sintactico.dominio.AnalizadorSintactico.ResultadoSintactico;
-import com.compilador.sintactico.adaptadores.salida.ClienteLLM;
-import com.compilador.sintactico.adaptadores.salida.ClienteSemantico;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,19 +11,17 @@ import static spark.Spark.*;
 /**
  * Adaptador de entrada: servidor HTTP con Spark Java.
  * Expone los endpoints REST del Servicio Sintactico.
- * Recibe los tokens del Lexico, construye el AST y reenvia al Semantico.
+ *
+ * Patron: Cadena de Responsabilidad Distribuida.
+ * Este adaptador SOLO construye el AST y retorna el resultado al Orquestador.
+ * No llama a ningun otro servicio (ni Semantico, ni LLM).
  */
 public class ServidorWeb {
 
     private final AnalizadorSintactico analizador;
-    private final ClienteLLM clienteLlm;
-    private final ClienteSemantico clienteSemantico;
 
-    public ServidorWeb(AnalizadorSintactico analizador, ClienteLLM clienteLlm,
-                       ClienteSemantico clienteSemantico) {
+    public ServidorWeb(AnalizadorSintactico analizador) {
         this.analizador = analizador;
-        this.clienteLlm = clienteLlm;
-        this.clienteSemantico = clienteSemantico;
     }
 
     /**
@@ -72,38 +68,31 @@ public class ServidorWeb {
                 : new JsonArray();
 
             System.out.println("[SINTACTICO] Recibidos " + tokensRecibidos.size()
-                + " tokens del Servicio Lexico.");
+                + " tokens del Orquestador.");
 
             // Fase 2: Analisis Sintactico (Construccion del AST)
             ResultadoSintactico resultado = analizador.construirAst(tokensRecibidos, codigoFuente);
 
             if (!resultado.esExitoso()) {
-                // Error sintactico detectado: consultamos al LLM para diagnostico
+                // Error sintactico: devolver directamente al Orquestador
                 System.out.println("[SINTACTICO] Error sintactico detectado.");
-
-                JsonObject diagnosticoIa = clienteLlm.diagnosticarError(codigoFuente, resultado.getError());
 
                 respuesta.status(422);
                 JsonObject respuestaError = new JsonObject();
                 respuestaError.addProperty("exito", false);
                 respuestaError.addProperty("fase_fallo", "Sintactico");
                 respuestaError.add("detalle_tecnico", resultado.getError());
-                respuestaError.add("diagnostico_ia", diagnosticoIa);
                 return respuestaError.toString();
             }
 
-            // AST construido exitosamente: reenviar al Servicio Semantico
-            System.out.println("[SINTACTICO] AST construido exitosamente. Reenviando al Servicio Semantico.");
+            // AST construido exitosamente: devolver al Orquestador
+            System.out.println("[SINTACTICO] AST construido exitosamente.");
 
-            JsonObject payloadSemantico = new JsonObject();
-            payloadSemantico.addProperty("codigo_fuente", codigoFuente);
-            payloadSemantico.add("ast", resultado.getAst());
-
-            ClienteSemantico.RespuestaServicio respuestaSemantico =
-                clienteSemantico.reenviar(payloadSemantico);
-
-            respuesta.status(respuestaSemantico.getCodigoEstado());
-            return respuestaSemantico.getCuerpo();
+            respuesta.status(200);
+            JsonObject respuestaExitosa = new JsonObject();
+            respuestaExitosa.addProperty("exito", true);
+            respuestaExitosa.add("ast", resultado.getAst());
+            return respuestaExitosa.toString();
         });
 
         // Endpoint de salud: GET /health

@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-17 AS compilacion
+FROM maven:3.9-eclipse-temurin-21 AS compilacion
 
 WORKDIR /app
 COPY pom.xml .
@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn package -DskipTests -q
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 COPY --from=compilacion /app/target/servicio-sintactico-1.0.0.jar app.jar
